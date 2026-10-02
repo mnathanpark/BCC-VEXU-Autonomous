@@ -1,10 +1,86 @@
 #include "lemlib/api.hpp" // IWYU pragma: keep
 #include "main.h"
 
+//gear ratio 48/60
 
 // Applying positive voltage
-pros::MotorGroup left_motors({-1, 2, -3, 4, -5});
-pros::MotorGroup right_motors({-6, 7, -8, 9, -10});
+pros::MotorGroup left_motors({-1, 2, -3, 4, -5}, pros::MotorGearset::blue);
+pros::MotorGroup right_motors({-6, 7, -8, 9, -10}, pros::MotorGearset::blue);
+
+
+// DRIVETRAIN SETUP NOT FINAL
+lemlib::Drivetrain drivetrain(&left_motors, // left motor group
+                              &right_motors, // right motor group
+                              14, // 14.5 NOT FINAL
+                              lemlib::Omniwheel::NEW_325, // using new 4" omnis
+                              480, // drivetrain rpm is 480
+                              2 // horizontal drift is 2 (for now)
+);
+
+// MAKE SURE TO CONFIGURE NEGATIVE VALUES IF THEY DECREASE!!!!!!
+// NO OFFSET NEEDED BECAUSE ITS IN THE CENTER????
+// IS THE VERTICAL ODOMETRY A V5 ROTATION SENSOR????????
+pros::adi::Encoder vertical_encoder('A', 'B');
+
+ // configure ports - odometry is in the center
+pros::Rotation x_sensor(1);
+
+ // configure ports - odometry is in the center
+pros::Rotation y_sensor(1);
+
+lemlib::TrackingWheel horizontal_tracking_wheel(&x_sensor, lemlib::Omniwheel::NEW_275, -5.75);
+// vertical tracking wheel
+lemlib::TrackingWheel vertical_tracking_wheel(&y_sensor, lemlib::Omniwheel::NEW_275, -2.5);
+
+lemlib::OdomSensors sensors(nullptr, // vertical tracking wheel 1, set to null
+                            nullptr, // vertical tracking wheel 2, set to nullptr as we are using IMEs
+                            &horizontal_tracking_wheel, // horizontal tracking wheel 1
+                            nullptr, // horizontal tracking wheel 2, set to nullptr as we don't have a second one
+                            nullptr // inertial sensor
+);
+
+// lateral PID controller
+lemlib::ControllerSettings lateral_controller(10, // proportional gain (kP)
+                                              0, // integral gain (kI)
+                                              3, // derivative gain (kD)
+                                              3, // anti windup
+                                              1, // small error range, in inches
+                                              100, // small error range timeout, in milliseconds
+                                              3, // large error range, in inches
+                                              500, // large error range timeout, in milliseconds
+                                              20 // maximum acceleration (slew)
+);
+
+// angular PID controller
+lemlib::ControllerSettings angular_controller(2, // proportional gain (kP)
+                                              0, // integral gain (kI)
+                                              10, // derivative gain (kD)
+                                              3, // anti windup
+                                              1, // small error range, in degrees
+                                              100, // small error range timeout, in milliseconds
+                                              3, // large error range, in degrees
+                                              500, // large error range timeout, in milliseconds
+                                              0 // maximum acceleration (slew)
+);
+
+// create the chassis
+lemlib::Chassis chassis(drivetrain, // drivetrain settings
+                        lateral_controller, // lateral PID settings
+                        angular_controller, // angular PID settings
+                        sensors // odometry sensors
+);
+
+// this runs at the start of the program
+void initialize() {
+    pros::lcd::initialize(); // initialize brain screen
+	chassis.calibrate(); // calibrate sensors
+    while (true) { // infinite loop
+        // print measurements from the x and y axis sensors
+		pros::lcd::print(0, "x axis encoder: %i", x_sensor.get_position());
+		pros::lcd::print(0, "y axis encoder: %i", y_sensor.get_position());
+        pros::delay(10); // delay to save resources. DO NOT REMOVE
+    }
+}
 
 /**
  * A callback function for LLEMU's center button.

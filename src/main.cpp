@@ -1,20 +1,22 @@
 #include "lemlib/api.hpp" // IWYU pragma: keep
 #include "main.h"
+#include "subsystems/clamp.hpp"
+#include "subsystems/drive.hpp"
+#include "subsystems/lift.hpp"
 
 //gear ratio 48/60
 
 // Applying positive voltage
-pros::MotorGroup left_motors({-1, 2, -3, 4, -5}, pros::MotorGearset::blue);
-pros::MotorGroup right_motors({-6, 7, -8, 9, -10}, pros::MotorGearset::blue);
+pros::MotorGroup leftDrive({-1, -2, 3, -9}, pros::MotorGearset::blue);
+pros::MotorGroup rightDrive({5, 6, -7, 8}, pros::MotorGearset::blue);
 
-
-// DRIVETRAIN SETUP NOT FINAL
-lemlib::Drivetrain drivetrain(&left_motors, // left motor group
-                              &right_motors, // right motor group
-                              12.79, // 14.5 NOT FINAL
+// drivetrain settings
+lemlib::Drivetrain drivetrain(&leftDrive, // left motor group
+                              &rightDrive, // right motor group
+                              10, // 10 inch track width
                               lemlib::Omniwheel::NEW_325, // using new 4" omnis
-                              480, // drivetrain rpm is 480
-                              8 // Horizontal drift 
+                              450, // drivetrain rpm is 360
+                              2 // horizontal drift is 2 (for now)
 );
 
 pros::Rotation x_sensor(19);
@@ -81,6 +83,11 @@ lemlib::Chassis chassis(drivetrain,
 
 // this runs at the start of the program
 void initialize() {
+    // start the subsystem tasks before anything else
+    pros::Task lift_task(liftControl, "Lift Task");
+    pros::Task drive_task(driveControl, "Drive Task");
+    pros::Task clamp_task(clampControl, "Clamp Task");
+
     pros::lcd::initialize(); // initialize brain screen
     chassis.calibrate(); // calibrate sensors
     // print position to brain screen
@@ -132,7 +139,12 @@ void initialize() {
  * the VEX Competition Switch, following either autonomous or opcontrol. When
  * the robot is enabled, this task will exit.
  */
-void disabled() {}
+void disabled() {
+    // stop driver input so it can't fight autonomous motions later
+    liftEnabled.store(false);
+    driveEnabled.store(false);
+    clampEnabled.store(false);
+}
 
 /**
  * Runs after initialize(), and before autonomous when connected to the Field
@@ -157,6 +169,10 @@ void competition_initialize() {}
  * from where it left off.
  */
 void autonomous() {
+    // driver input off so the drive task doesn't override LemLib motions
+    liftEnabled.store(false);
+    driveEnabled.store(false);
+    clampEnabled.store(false);
 
     
 
@@ -179,15 +195,12 @@ void autonomous() {
 pros::Controller controller(pros::E_CONTROLLER_MASTER);
 
 void opcontrol() {
+    liftEnabled.store(true); // let the lift task take driver input
+    driveEnabled.store(true); // let the drive task take joystick input
+    clampEnabled.store(true); // let the clamp task take driver input
+
     while (true) {
-        // get left y and right x positions
-        int leftY = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
-        int leftX = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_X);
-
-        // move the robot
-        chassis.arcade(leftX, leftY);
-
-        // delay to save resources
+        // drive, lift, and clamp run in their own tasks
         pros::delay(25);
     }
 

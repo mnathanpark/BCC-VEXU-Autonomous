@@ -10,9 +10,9 @@ void clampControl() {
     while (true) {
         if (clampEnabled.load()) {
             if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L1)) {
-                clampMotor.move(127);
+                clampMotor.move(12000); // Upgraded to max Voltage
             } else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2)) {
-                clampMotor.move(-127);
+                clampMotor.move(-12000); // Upgraded to max Voltage
             } else {
                 clampMotor.brake();
             }

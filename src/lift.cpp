@@ -11,9 +11,9 @@ void liftControl() {
     while (true) {
         if (liftEnabled.load()) {
             if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R1)) {
-                liftMotors.move(127); // raise
+                liftMotors.move(12000); // Upgraded to max Voltage
             } else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R2)) {
-                liftMotors.move(-127); // lower
+                liftMotors.move(-12000); // Upgraded to max Voltage
             } else {
                 liftMotors.brake();
             }

@@ -1,11 +1,29 @@
 #include "lemlib/api.hpp" // IWYU pragma: keep
+#include "lemlib/chassis/chassis.hpp"
+#include "liblvgl/display/lv_display.h"
+#include "liblvgl/widgets/label/lv_label.h"
+#include "pros/abstract_motor.hpp"
+#include "pros/misc.h"
 #include "main.h"
 
 //gear ratio 48/60
+// lift two motors diff direction
+// clamp one motor 
 
 // Applying positive voltage
 pros::MotorGroup left_motors({-1, 2, -3, 4, -5}, pros::MotorGearset::blue);
 pros::MotorGroup right_motors({-6, 7, -8, 9, -10}, pros::MotorGearset::blue);
+
+// CONFIGURE PORT NUMBERS
+// CHECK MOTOR GEAR SET COLOR
+pros::Motor lift_pos(11, pros::MotorGearset::green);
+pros::Motor lift_neg(-12, pros::MotorGearset::green);
+
+// CONFIGURE PORT NUMBERS
+// CHECK MOTOR GEAR SET COLOR
+pros::Motor clamp(13, pros::MotorGearset::red);
+
+pros::Motor intake(14, pros::MotorGearset::green);
 
 
 // DRIVETRAIN SETUP NOT FINAL
@@ -79,12 +97,105 @@ lemlib::Chassis chassis(drivetrain,
                         &steer_curve
 );
 
+/*  0 - None
+    1 - Auto for bigger bot
+    2 - Auto for smaller bot
+    3 - Skills
+    4 - OpControl
+*/
+static int id_big = 1;
+static int id_small = 2;
+static int id_skills = 3;
+
+lv_obj_t *btn_big;
+lv_obj_t *btn_small;
+lv_obj_t *btn_skills;
+
+bool selected_routine_bool = false;
+
+int selected_routine;
+lv_obj_t* status_label;
+
+static void button_click_brain(lv_event_t *e) {
+
+    if (selected_routine_bool) {
+        return;
+    }
+
+    lv_event_code_t code = lv_event_get_code(e);
+
+    if (code == LV_EVENT_CLICKED) {
+        int *id = (int*) lv_event_get_user_data(e);
+        if (id != nullptr) {
+            selected_routine = *id;
+            selected_routine_bool = true;
+
+            switch(*id) {
+                case 1: lv_label_set_text(status_label, "Selected: Big Auto"); break;
+                case 2: lv_label_set_text(status_label, "Selected: Small Auto"); break;
+                case 3: lv_label_set_text(status_label, "Skills"); break;
+            }
+        }
+    }
+}
+
 // this runs at the start of the program
 void initialize() {
-    pros::lcd::initialize(); // initialize brain screen
+    selected_routine = 0;
+
+    lv_obj_t *title = lv_label_create(lv_screen_active());
+    lv_label_set_text(title, "BCC AUTO AND SKILLS");
+    lv_obj_align(title, LV_ALIGN_TOP_MID, 0, 15);
+
+    status_label = lv_label_create(lv_screen_active());
+    lv_label_set_text(status_label, "Selected: NONE");
+    lv_obj_align(status_label, LV_ALIGN_TOP_MID, 0, 45);
+
+
+
+    // Big Robot Button
+    lv_obj_t *btn_big = lv_button_create(lv_screen_active());
+    lv_obj_set_pos(btn_big, 30, 80);
+    lv_obj_set_size(btn_big, 200, 50);
+    // Attach event callback and pass 1 as user data
+    lv_obj_add_event_cb(btn_big, button_click_brain, LV_EVENT_CLICKED, &id_big);
+
+    lv_obj_t *label_big = lv_label_create(btn_big);
+    lv_label_set_text(label_big, "Big Autonomous");
+    lv_obj_center(label_big);
+
+
+
+    // Small Robot Button
+    lv_obj_t *btn_small = lv_button_create(lv_screen_active());
+    lv_obj_set_pos(btn_small, 250, 80);
+    lv_obj_set_size(btn_small, 200, 50);
+    lv_obj_add_event_cb(btn_small, button_click_brain, LV_EVENT_CLICKED, &id_small);
+
+    lv_obj_t *label_small = lv_label_create(btn_small);
+    lv_label_set_text(label_small, "Small Autonomous");
+    lv_obj_center(label_small);
+
+
+
+    // Skills Button
+    lv_obj_t *btn_skills = lv_button_create(lv_screen_active());
+    lv_obj_set_pos(btn_skills, 30, 150);
+    lv_obj_set_size(btn_skills, 420, 50);
+    lv_obj_add_event_cb(btn_skills, button_click_brain, LV_EVENT_CLICKED, &id_skills);
+
+    lv_obj_t *label_skills = lv_label_create(btn_skills);
+    lv_label_set_text(label_skills, "Skills");
+    lv_obj_center(label_skills);
+
+
+
+
+    // maybe intefere with lvgl?
+    //pros::lcd::initialize(); // initialize brain screen
     chassis.calibrate(); // calibrate sensors
     // print position to brain screen
-    pros::Task screen_task([&]() {
+    /*pros::Task screen_task([&]() {
         while (true) {
             // print robot location to the brain screen
             pros::lcd::print(0, "X: %f", chassis.getPose().x); // x
@@ -93,7 +204,7 @@ void initialize() {
             // delay to save resources
             pros::delay(20);
         }
-    });
+    });*/
 }
 
 /**
@@ -156,10 +267,46 @@ void competition_initialize() {}
  * will be stopped. Re-enabling the robot will restart the task, not re-start it
  * from where it left off.
  */
+
+void run_big_auto() {
+
+    selected_routine_bool = false;
+}
+
+void run_small_auto() {
+
+    selected_routine_bool = false;
+}
+
+void run_skills() {
+
+    selected_routine_bool = false;
+}
+
 void autonomous() {
+    switch (selected_routine) {
+        case 1: run_big_auto(); break;
+        case 2: run_small_auto(); break;
+        case 3: run_skills(); break;
+        default: break;
+    }
 
+
+
+
+
+    // voltage control
+    // lift_neg.move_voltage(12000);
+
+    chassis.setPose(0,0,0);
+
+    // timeout is time in milliseconds to approximately complete the function
+    // .forwards = false means face the point with the back of the robot
+    // .maxSpeed is speed in voltage (127 is max)
+    chassis.moveToPoint(0, 0, 0, {.forwards = false, .maxSpeed = 64}, false);
     
-
+    chassis.turnToHeading(0, 0);
+    chassis.swingToHeading(0, lemlib::DriveSide::RIGHT, 0);
 }
 
 /**
@@ -179,43 +326,57 @@ void autonomous() {
 pros::Controller controller(pros::E_CONTROLLER_MASTER);
 
 void opcontrol() {
+    bool l1_pressed = controller.get_digital(pros::E_CONTROLLER_DIGITAL_L1);
+    bool l2_pressed = controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2);
+    bool r1_pressed = controller.get_digital(pros::E_CONTROLLER_DIGITAL_R1);
+    bool r2_pressed = controller.get_digital(pros::E_CONTROLLER_DIGITAL_R2);
+    bool a_pressed = controller.get_digital(pros::E_CONTROLLER_DIGITAL_A);
+    bool b_pressed = controller.get_digital(pros::E_CONTROLLER_DIGITAL_B);
+    bool x_pressed = controller.get_digital(pros::E_CONTROLLER_DIGITAL_X);
+    bool y_pressed = controller.get_digital(pros::E_CONTROLLER_DIGITAL_Y);
+    bool up_pressed = controller.get_digital(pros::E_CONTROLLER_DIGITAL_UP);
+    bool down_pressed = controller.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN);
+    bool left_pressed = controller.get_digital(pros::E_CONTROLLER_DIGITAL_LEFT);
+    bool right_pressed = controller.get_digital(pros::E_CONTROLLER_DIGITAL_RIGHT);
+
+
+
     while (true) {
         // get left y and right x positions
-        int leftY = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
-        int leftX = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_X);
+        int leftJoystick = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
+        int rightJoystick = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y);
 
         // move the robot
-        chassis.arcade(leftX, leftY);
+        chassis.arcade(leftJoystick, rightJoystick);
+
+        // control lift
+        // maybe make it quantized?
+        if (l2_pressed) {
+            lift_pos.move(127);
+            lift_neg.move(127);
+        } else if (r2_pressed) {
+            lift_pos.move(-127);
+            lift_neg.move(-127);
+        } else {
+            lift_pos.move(0);
+            lift_neg.move(0);
+        }
+
+        // control clamp
+        if (l1_pressed) {
+            clamp.move(127);
+        } else {
+            clamp.move(0);
+        }
+
+        // control intake
+        if (r1_pressed) {
+            intake.move(127);
+        } else {
+            intake.move(0);
+        }
 
         // delay to save resources
         pros::delay(25);
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	/*while (true) {
-		pros::lcd::print(0, "%d %d %d", (pros::lcd::read_buttons() & LCD_BTN_LEFT) >> 2,
-		                 (pros::lcd::read_buttons() & LCD_BTN_CENTER) >> 1,
-		                 (pros::lcd::read_buttons() & LCD_BTN_RIGHT) >> 0);  // Prints status of the emulated screen LCDs
-
-		// Arcade control scheme
-		int dir = controller.get_analog(ANALOG_LEFT_Y);    // Gets amount forward/backward from left joystick
-		int turn = controller.get_analog(ANALOG_RIGHT_X);  // Gets the turn left/right from right joystick
-		left_motors.move(dir - turn);                      // Sets left motor voltage
-		right_motors.move(dir + turn);                     // Sets right motor voltage
-		pros::delay(20);                               // Run for 20 ms then update
-	}
-    */
 }

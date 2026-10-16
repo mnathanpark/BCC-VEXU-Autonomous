@@ -1,7 +1,7 @@
 {
   "py/object": "pros.conductor.project.Project",
   "py/state": {
-    "project_name": "VEXU BCC",
+    "project_name": "LVGL TEST",
     "target": "v5",
     "templates": {
       "LemLib": {
@@ -635,7 +635,7 @@
       }
     },
     "upload_options": {
-      "icon": "clawbot"
+      "icon": "pizza"
     },
     "use_early_access": false
   }

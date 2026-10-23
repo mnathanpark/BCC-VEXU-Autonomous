@@ -11,8 +11,8 @@
 // clamp one motor 
 
 // Applying positive voltage
-pros::MotorGroup left_motors({-1, 2, -3, 4, -5}, pros::MotorGearset::blue);
-pros::MotorGroup right_motors({-6, 7, -8, 9, -10}, pros::MotorGearset::blue);
+pros::MotorGroup left_motors({-1, -2, 3, -9}, pros::MotorGearset::blue);
+pros::MotorGroup right_motors({5, 6, -7, 8}, pros::MotorGearset::blue);
 
 // CONFIGURE PORT NUMBERS
 // CHECK MOTOR GEAR SET COLOR
@@ -29,10 +29,10 @@ pros::Motor intake(14, pros::MotorGearset::green);
 // DRIVETRAIN SETUP NOT FINAL
 lemlib::Drivetrain drivetrain(&left_motors, // left motor group
                               &right_motors, // right motor group
-                              12.79, // 14.5 NOT FINAL
+                              10, // 14.5 NOT FINAL
                               lemlib::Omniwheel::NEW_325, // using new 4" omnis
-                              480, // drivetrain rpm is 480
-                              8 // Horizontal drift 
+                              450, // drivetrain rpm is 480
+                              2 // Horizontal drift 
 );
 
 pros::Rotation x_sensor(19);
@@ -142,6 +142,8 @@ static void button_click_brain(lv_event_t *e) {
 // this runs at the start of the program
 void initialize() {
     selected_routine = 0;
+    left_motors.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
+    right_motors.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
 
     lv_obj_t *title = lv_label_create(lv_screen_active());
     lv_label_set_text(title, "BCC AUTO AND SKILLS");
@@ -191,7 +193,6 @@ void initialize() {
 
 
 
-    // maybe intefere with lvgl?
     //pros::lcd::initialize(); // initialize brain screen
     chassis.calibrate(); // calibrate sensors
     // print position to brain screen
@@ -268,7 +269,33 @@ void competition_initialize() {}
  * from where it left off.
  */
 
+void toggle() {
+
+}
+
 void run_big_auto() {
+    chassis.setPose(0,0,0);
+
+    // timeout is time in milliseconds to approximately complete the function
+    // .forwards = false means face the point with the back of the robot
+    // .maxSpeed is speed in voltage (127 is max)
+
+    //chassis.moveToPoint(0, 0, 0, {.forwards = false, .maxSpeed = 64}, false);
+    //chassis.turnToHeading(0, 0);
+    //chassis.swingToHeading(0, lemlib::DriveSide::RIGHT, 0);
+
+    // maybe set brake mode to hold for more precision
+
+    //move clamp to set toggle
+
+    chassis.moveToPoint(0,5,500);
+    chassis.turnToHeading(45, 250);
+    chassis.moveToPoint(5, 2.5, 250);
+    
+    // manipulate lift to place pin
+
+    chassis.moveToPoint(0, 0, 0, {.forwards = false, .maxSpeed = 64});
+    
 
     selected_routine_bool = false;
 }
@@ -290,23 +317,6 @@ void autonomous() {
         case 3: run_skills(); break;
         default: break;
     }
-
-
-
-
-
-    // voltage control
-    // lift_neg.move_voltage(12000);
-
-    chassis.setPose(0,0,0);
-
-    // timeout is time in milliseconds to approximately complete the function
-    // .forwards = false means face the point with the back of the robot
-    // .maxSpeed is speed in voltage (127 is max)
-    chassis.moveToPoint(0, 0, 0, {.forwards = false, .maxSpeed = 64}, false);
-    
-    chassis.turnToHeading(0, 0);
-    chassis.swingToHeading(0, lemlib::DriveSide::RIGHT, 0);
 }
 
 /**
@@ -324,6 +334,7 @@ void autonomous() {
  */
 
 pros::Controller controller(pros::E_CONTROLLER_MASTER);
+
 
 void opcontrol() {
     bool l1_pressed = controller.get_digital(pros::E_CONTROLLER_DIGITAL_L1);

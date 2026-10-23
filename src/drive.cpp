@@ -8,10 +8,10 @@ void driveControl() {
         if (driveEnabled.load()) {
             // get left y and right x positions
             int leftY = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
-            int leftX = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_X);
+            int rightX = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
 
             // move the robot
-            chassis.arcade(leftY, leftX);
+            chassis.arcade(leftY, rightX);
         }
 
         // delay to save resources

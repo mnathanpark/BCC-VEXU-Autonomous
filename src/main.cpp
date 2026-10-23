@@ -7,7 +7,7 @@
 //gear ratio 48/60
 
 // Applying positive voltage
-pros::MotorGroup leftDrive({-1, -2, 3, -9}, pros::MotorGearset::blue);
+pros::MotorGroup leftDrive({-1, -2, 3, -4}, pros::MotorGearset::blue);
 pros::MotorGroup rightDrive({5, 6, -7, 8}, pros::MotorGearset::blue);
 
 // drivetrain settings

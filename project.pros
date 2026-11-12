@@ -1,7 +1,7 @@
 {
   "py/object": "pros.conductor.project.Project",
   "py/state": {
-    "project_name": "VEXU BCC",
+    "project_name": "WHAT ???",
     "target": "v5",
     "templates": {
       "LemLib": {
@@ -635,7 +635,10 @@
       }
     },
     "upload_options": {
-      "icon": "clawbot"
+      "icon": "clawbot",
+      "description": "Tuning PID",
+      "slot": 3,
+      "after": "none"
     },
     "use_early_access": false
   }

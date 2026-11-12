@@ -1,5 +1,6 @@
 #include "lemlib/api.hpp" // IWYU pragma: keep
 #include "main.h"
+#include "pros/motors.h"
 #include "subsystems/clamp.hpp"
 #include "subsystems/drive.hpp"
 #include "subsystems/lift.hpp"
@@ -13,21 +14,21 @@ pros::MotorGroup rightDrive({5, 6, -7, 8}, pros::MotorGearset::blue);
 // drivetrain settings
 lemlib::Drivetrain drivetrain(&leftDrive, // left motor group
                               &rightDrive, // right motor group
-                              10, // 10 inch track width
+                              13, // 10 inch track width
                               lemlib::Omniwheel::NEW_325, // using new 4" omnis
                               450, // drivetrain rpm is 360
                               2 // horizontal drift is 2 (for now)
 );
 
-pros::Rotation x_sensor(19);
+pros::Rotation x_sensor(-17);
 
-pros::Rotation y_sensor(20);
+pros::Rotation y_sensor(-20);
 
-pros::Imu imu(17);
+pros::Imu imu(19);
 
 // CONFIGURE OFFSET WHEN MAKING BOT
-lemlib::TrackingWheel horizontal_tracking_wheel(&x_sensor, lemlib::Omniwheel::NEW_2, -5.75);
-lemlib::TrackingWheel vertical_tracking_wheel(&y_sensor, lemlib::Omniwheel::NEW_2, -2.5);
+lemlib::TrackingWheel horizontal_tracking_wheel(&x_sensor, lemlib::Omniwheel::NEW_2, -3);
+lemlib::TrackingWheel vertical_tracking_wheel(&y_sensor, lemlib::Omniwheel::NEW_2, -2.25);
 
 lemlib::OdomSensors sensors(&vertical_tracking_wheel, // vertical tracking wheel 1, set to null
                             nullptr, // vertical tracking wheel 2, set to nullptr as we are using IMEs
@@ -37,26 +38,26 @@ lemlib::OdomSensors sensors(&vertical_tracking_wheel, // vertical tracking wheel
 );
 
 // lateral PID controller
-lemlib::ControllerSettings lateral_controller(10, // proportional gain (kP)
+lemlib::ControllerSettings lateral_controller(12.8, // proportional gain (kP)
                                               0, // integral gain (kI)
-                                              3, // derivative gain (kD)
-                                              3, // anti windup
-                                              1, // small error range, in inches
-                                              100, // small error range timeout, in milliseconds
-                                              3, // large error range, in inches
-                                              500, // large error range timeout, in milliseconds
-                                              20 // maximum acceleration (slew)
+                                              38, // derivative gain (kD)
+                                              0, // anti windup
+                                              0, // small error range, in inches
+                                              0, // small error range timeout, in milliseconds
+                                              0, // large error range, in inches
+                                              0, // large error range timeout, in milliseconds
+                                              0 // maximum acceleration (slew)
 );
 
 // angular PID controller
-lemlib::ControllerSettings angular_controller(2, // proportional gain (kP)
+lemlib::ControllerSettings angular_controller(5, // proportional gain (kP)
                                               0, // integral gain (kI)
-                                              10, // derivative gain (kD)
-                                              3, // anti windup
-                                              1, // small error range, in degrees
-                                              100, // small error range timeout, in milliseconds
-                                              3, // large error range, in degrees
-                                              500, // large error range timeout, in milliseconds
+                                              20, // derivative gain (kD)
+                                              0, // anti windup
+                                              0, // small error range, in degrees
+                                              0, // small error range timeout, in milliseconds
+                                              0, // large error range, in degrees
+                                              0, // large error range timeout, in milliseconds
                                               0 // maximum acceleration (slew)
 );
 
@@ -90,6 +91,7 @@ void initialize() {
 
     pros::lcd::initialize(); // initialize brain screen
     chassis.calibrate(); // calibrate sensors
+    chassis.setPose(0,0,0);
     // print position to brain screen
     pros::Task screen_task([&]() {
         while (true) {
@@ -97,6 +99,7 @@ void initialize() {
             pros::lcd::print(0, "X: %f", chassis.getPose().x); // x
             pros::lcd::print(1, "Y: %f", chassis.getPose().y); // y
             pros::lcd::print(2, "Theta: %f", chassis.getPose().theta); // heading
+            pros::lcd::print(3, "Xraw: %d", x_sensor.get_position());
             // delay to save resources
             pros::delay(20);
         }
@@ -170,9 +173,29 @@ void competition_initialize() {}
  */
 void autonomous() {
     // driver input off so the drive task doesn't override LemLib motions
-    liftEnabled.store(false);
-    driveEnabled.store(false);
-    clampEnabled.store(false);
+
+    //liftEnabled.store(false);
+    //driveEnabled.store(false);
+    //clampEnabled.store(false);
+
+    leftDrive.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
+    rightDrive.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
+
+    chassis.setPose(0,0,0);
+    
+    // Move to first goal
+    chassis.moveToPoint(12, 8, 1000);
+    chassis.moveToPoint(6,1,1000, {.forwards = false});
+    chassis.swingToHeading(90, DriveSide::LEFT, 1000);
+    chassis.moveToPoint(18, -3, 2000, {.maxSpeed = 80});
+    //chassis.moveToPoint(15, 5, 1000);
+    pros::delay(1000);
+    chassis.turnToHeading(45, 500);
+    pros::delay(1000);
+    chassis.turnToHeading(-45, 1000, {.maxSpeed = 60});
+    chassis.moveToPoint(0, 14, 1000);
+
+    
 
     
 
@@ -198,6 +221,9 @@ void opcontrol() {
     liftEnabled.store(true); // let the lift task take driver input
     driveEnabled.store(true); // let the drive task take joystick input
     clampEnabled.store(true); // let the clamp task take driver input
+
+    leftDrive.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
+    rightDrive.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
 
     while (true) {
         // drive, lift, and clamp run in their own tasks

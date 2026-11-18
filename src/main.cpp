@@ -182,11 +182,12 @@ void autonomous() {
     //clawEnabled.store(false);
     //toggleEnabled.store(false);
 
+    //cant we use chassis.set_brake_mode?
     leftDrive.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
     rightDrive.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
 
     chassis.setPose(0,0,0);
-    
+    /*
     // Move to first goal
     chassis.moveToPoint(12, 8, 1000);
     chassis.moveToPoint(6,6,1000, {.forwards = false});
@@ -200,7 +201,7 @@ void autonomous() {
     pros::delay(1000);
     chassis.turnToHeading(-45, 1000, {.maxSpeed = 60});
     chassis.moveToPoint(0, 20, 1000);
-
+    */
     
 
     

@@ -1,7 +1,11 @@
 #include "lemlib/api.hpp" // IWYU pragma: keep
 #include "main.h"
+#include "pros/abstract_motor.hpp"
+#include "pros/motor_group.hpp"
 #include "pros/motors.h"
 #include "subsystems/claw.hpp"
+#include "pros/motors.hpp"
+#include "subsystems/clamp.hpp"
 #include "subsystems/drive.hpp"
 #include "subsystems/lift.hpp"
 #include "subsystems/toggle.hpp"
@@ -82,6 +86,10 @@ lemlib::Chassis chassis(drivetrain,
                         &throttle_curve, 
                         &steer_curve
 );
+
+pros::Motor claw(1, pros::MotorGearset::green);
+pros::Motor toggle(1, pros::MotorGearset::green);
+pros::MotorGroup lift({1, 2}, pros::MotorGearset::red);
 
 // this runs at the start of the program
 void initialize() {
@@ -174,6 +182,14 @@ void competition_initialize() {}
  * will be stopped. Re-enabling the robot will restart the task, not re-start it
  * from where it left off.
  */
+
+void change_toggle(void* param) {
+    pros::Motor* motor = (pros::Motor*)param;
+    motor->move(100);
+    pros::delay(500); // Run for 1 second
+    motor->move(0);
+}
+
 void autonomous() {
     // driver input off so the drive task doesn't override LemLib motions
 
@@ -200,14 +216,15 @@ void autonomous() {
     chassis.swingToHeading(90, DriveSide::LEFT, 1000);
     chassis.moveToPoint(25, -4, 2000, {.maxSpeed = 60});
     chassis.turnToHeading(45, 500);
-    chassis.moveToPoint(30, 4, 1000);
-    pros::delay(1000);
-    chassis.turnToHeading(-45, 1000, {.maxSpeed = 60});
-    chassis.moveToPoint(0, 20, 1000);
-    */
+    chassis.moveToPoint(35, 13.5, 1000, {.maxSpeed = 60});
+    chassis.turnToHeading(-90, 1000, {.maxSpeed = 60});
+    chassis.moveToPoint(5, 15.5, 1000, {.maxSpeed = 60});
+    chassis.moveToPoint(32, 15, 1000, {.forwards = false, .maxSpeed = 80});
+    chassis.turnToHeading(-180, 1000, {.maxSpeed = 60});
+    chassis.moveToPoint(32, -5, 1000, {.maxSpeed = 60});
+    /*chassis.swingToHeading(-90, DriveSide::LEFT, 1000);*/
     
-
-    
+    pros::Task timedMotorTask(change_toggle, &lift, "Timed Motor Task");
 
 }
 

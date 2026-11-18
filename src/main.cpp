@@ -1,7 +1,7 @@
 #include "lemlib/api.hpp" // IWYU pragma: keep
 #include "main.h"
 #include "pros/motors.h"
-#include "subsystems/clamp.hpp"
+#include "subsystems/claw.hpp"
 #include "subsystems/drive.hpp"
 #include "subsystems/lift.hpp"
 
@@ -87,7 +87,7 @@ void initialize() {
     // start the subsystem tasks before anything else
     pros::Task lift_task(liftControl, "Lift Task");
     pros::Task drive_task(driveControl, "Drive Task");
-    pros::Task clamp_task(clampControl, "Clamp Task");
+    pros::Task claw_task(clawControl, "Claw Task");
 
     pros::lcd::initialize(); // initialize brain screen
     chassis.calibrate(); // calibrate sensors
@@ -146,7 +146,7 @@ void disabled() {
     // stop driver input so it can't fight autonomous motions later
     liftEnabled.store(false);
     driveEnabled.store(false);
-    clampEnabled.store(false);
+    clawEnabled.store(false);
 }
 
 /**
@@ -176,7 +176,7 @@ void autonomous() {
 
     //liftEnabled.store(false);
     //driveEnabled.store(false);
-    //clampEnabled.store(false);
+    //clawEnabled.store(false);
 
     leftDrive.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
     rightDrive.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
@@ -222,13 +222,13 @@ pros::Controller controller(pros::E_CONTROLLER_MASTER);
 void opcontrol() {
     liftEnabled.store(true); // let the lift task take driver input
     driveEnabled.store(true); // let the drive task take joystick input
-    clampEnabled.store(true); // let the clamp task take driver input
+    clawEnabled.store(true); // let the claw task take driver input
 
     leftDrive.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
     rightDrive.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
 
     while (true) {
-        // drive, lift, and clamp run in their own tasks
+        // drive, lift, and claw run in their own tasks
         pros::delay(25);
     }
 

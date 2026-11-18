@@ -3,7 +3,7 @@
 #include "main.h"
 #include <atomic>
 
-// Cascade lift motors: ports 10 and 11 (green cartridge), spun in opposite directions
+// Lift motors: ports 9 and 10 (red cartridge), spun in opposite directions
 extern pros::MotorGroup liftMotors;
 
 // controller defined in main.cpp

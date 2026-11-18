@@ -1,7 +1,7 @@
 #include "subsystems/lift.hpp"
 
-// port 11 is reversed so both motors drive the cascade the same way
-pros::MotorGroup liftMotors({10, -11}, pros::MotorGearset::green);
+// port 10 is reversed so both motors drive the lift the same way
+pros::MotorGroup liftMotors({9, -10}, pros::MotorGearset::red);
 
 std::atomic<bool> liftEnabled{false};
 

@@ -4,6 +4,7 @@
 #include "subsystems/claw.hpp"
 #include "subsystems/drive.hpp"
 #include "subsystems/lift.hpp"
+#include "subsystems/toggle.hpp"
 
 //gear ratio 48/60
 
@@ -88,6 +89,7 @@ void initialize() {
     pros::Task lift_task(liftControl, "Lift Task");
     pros::Task drive_task(driveControl, "Drive Task");
     pros::Task claw_task(clawControl, "Claw Task");
+    pros::Task toggle_task(toggleControl, "Toggle Task");
 
     pros::lcd::initialize(); // initialize brain screen
     chassis.calibrate(); // calibrate sensors
@@ -147,6 +149,7 @@ void disabled() {
     liftEnabled.store(false);
     driveEnabled.store(false);
     clawEnabled.store(false);
+    toggleEnabled.store(false);
 }
 
 /**
@@ -177,6 +180,7 @@ void autonomous() {
     //liftEnabled.store(false);
     //driveEnabled.store(false);
     //clawEnabled.store(false);
+    //toggleEnabled.store(false);
 
     leftDrive.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
     rightDrive.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
@@ -223,12 +227,13 @@ void opcontrol() {
     liftEnabled.store(true); // let the lift task take driver input
     driveEnabled.store(true); // let the drive task take joystick input
     clawEnabled.store(true); // let the claw task take driver input
+    toggleEnabled.store(true); // let the toggle task take driver input
 
     leftDrive.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
     rightDrive.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
 
     while (true) {
-        // drive, lift, and claw run in their own tasks
+        // drive, lift, claw, and toggle run in their own tasks
         pros::delay(25);
     }
 

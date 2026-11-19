@@ -187,15 +187,18 @@ void autonomous() {
     rightDrive.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
 
     chassis.setPose(0,0,0);
+
+    change_toggle();
+    move_lift(700, 1);
+    chassis.moveToPoint(24, 15, 1500, {.maxSpeed = 100});
+    move_lift(700, -1);
+    
     /*
     // Move to first goal
-    chassis.moveToPoint(12, 8, 1000);
+    chassis.moveToPoint(12, 6, 1000, {.maxSpeed = 60});
     chassis.moveToPoint(6,6,1000, {.forwards = false});
     chassis.swingToHeading(90, DriveSide::LEFT, 1000);
-    chassis.moveToPoint(25, -4, 2000, {.maxSpeed = 80});
-    chassis.moveToPoint(25, 0, 1000);
-    //chassis.moveToPoint(15, 5, 1000);
-    pros::delay(1000);
+    chassis.moveToPoint(25, -4, 2000, {.maxSpeed = 60});
     chassis.turnToHeading(45, 500);
     chassis.moveToPoint(30, 4, 1000);
     pros::delay(1000);

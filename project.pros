@@ -1,7 +1,7 @@
 {
   "py/object": "pros.conductor.project.Project",
   "py/state": {
-    "project_name": "WHAT ???",
+    "project_name": "Friday Auto",
     "target": "v5",
     "templates": {
       "LemLib": {
@@ -635,9 +635,9 @@
       }
     },
     "upload_options": {
-      "icon": "clawbot",
-      "description": "Tuning PID",
-      "slot": 3,
+      "icon": "pizza",
+      "description": "Making Auto",
+      "slot": 1,
       "after": "none"
     },
     "use_early_access": false

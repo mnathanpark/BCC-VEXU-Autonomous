@@ -20,11 +20,11 @@ lemlib::Drivetrain drivetrain(&leftDrive, // left motor group
                               2 // horizontal drift is 2 (for now)
 );
 
-pros::Rotation x_sensor(17);
+pros::Rotation x_sensor(-17);
 //bot 1 negative
 //bot 2 positive
 
-pros::Rotation y_sensor(20);
+pros::Rotation y_sensor(-20);
 //bot 1 negative
 //bot 2 positive
 
@@ -185,7 +185,7 @@ void competition_initialize() {}
 
 void autonomous() {
     //bot 1
-    /*liftEnabled.store(false);
+    liftEnabled.store(false);
     driveEnabled.store(false);
     clawEnabled.store(false);
     toggleEnabled.store(false);
@@ -233,12 +233,12 @@ void autonomous() {
 
     chassis.moveToPoint(45, 26, 1000, {.forwards = false});
     chassis.turnToHeading(-30, 1000);
-    chassis.moveToPoint(10, 60, 5000, {.maxSpeed = 80});*/
+    chassis.moveToPoint(10, 60, 5000, {.maxSpeed = 80});
 
 
 
     //bot 2
-    liftEnabled.store(false);
+    /*liftEnabled.store(false);
     driveEnabled.store(false);
     clawEnabled.store(false);
     toggleEnabled.store(false);
@@ -257,7 +257,7 @@ void autonomous() {
     move_claw(600, -1);
 
     chassis.moveToPoint(0, 5, 1000, {.forwards = false, .maxSpeed = 80});
-    chassis.moveToPoint(5, 45, 3000, {.maxSpeed = 80});
+    chassis.moveToPoint(5, 45, 3000, {.maxSpeed = 80});*/
 
 }
 

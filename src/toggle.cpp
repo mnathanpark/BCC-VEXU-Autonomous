@@ -1,6 +1,6 @@
 #include "subsystems/toggle.hpp"
 
-pros::Motor toggleMotor(-12, pros::MotorGearset::green);
+pros::Motor toggleMotor(12, pros::MotorGearset::green);
 //bot 1 positive
 //bot 2 negative
 

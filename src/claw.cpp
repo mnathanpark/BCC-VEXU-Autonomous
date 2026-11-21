@@ -1,6 +1,6 @@
 #include "subsystems/claw.hpp"
 
-pros::Motor clawMotor(15, pros::MotorGearset::green);
+pros::Motor clawMotor(11, pros::MotorGearset::green);
 //11 (bot 1)
 //15 (bot 2)
 

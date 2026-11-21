@@ -1,7 +1,7 @@
 {
   "py/object": "pros.conductor.project.Project",
   "py/state": {
-    "project_name": "Friday Auto",
+    "project_name": "BOT2_BLACK",
     "target": "v5",
     "templates": {
       "LemLib": {
@@ -635,8 +635,8 @@
       }
     },
     "upload_options": {
-      "icon": "pizza",
-      "description": "Making Auto",
+      "icon": "alien",
+      "description": "COMP!!",
       "slot": 1,
       "after": "none"
     },

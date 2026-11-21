@@ -1,6 +1,8 @@
 #include "subsystems/toggle.hpp"
 
-pros::Motor toggleMotor(12, pros::MotorGearset::green);
+pros::Motor toggleMotor(-12, pros::MotorGearset::green);
+//bot 1 positive
+//bot 2 negative
 
 std::atomic<bool> toggleEnabled{false};
 std::atomic<bool> toggleAutoActive{false};
@@ -26,7 +28,7 @@ void change_toggle() {
     toggleAutoActive.store(true);
     toggleMotor.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
     toggleMotor.move(-127);
-    pros::delay(1000); // Run for 1 second
+    pros::delay(350); // Run for 1 second
     toggleMotor.brake();
     toggleAutoActive.store(false);
 }
